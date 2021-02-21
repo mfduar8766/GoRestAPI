@@ -8,6 +8,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/mfduar8766/GoRestAPI/book"
 	"github.com/mfduar8766/GoRestAPI/config"
+	"github.com/mfduar8766/GoRestAPI/db"
 	"github.com/mfduar8766/GoRestAPI/utils"
 )
 
@@ -24,25 +25,27 @@ func connectToDb() {
 	fmt.Println("connectToDb()")
 	dbConfig := config.InitDbConfig()
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbConfig.Host, dbConfig.Port, dbConfig.User, dbConfig.Password, dbConfig.DBName)
-	db, err := gorm.Open("postgres", connectionString)
+	var err error
+	db.GormInstance, err = gorm.Open("postgres", connectionString)
 	utils.MustNotError(err)
-	defer db.Close()
-	dataBase := db.DB()
+	dataBase := db.GormInstance.DB()
 	err = dataBase.Ping()
 	utils.MustNotError(err)
 	fmt.Println("Successfully connected to DB")
+	db.GormInstance.AutoMigrate(&book.Books{})
+	fmt.Println("Successfully migrated data to DB")
 }
 
 func main() {
 	fmt.Println("main()")
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			fmt.Printf("Error: %+v", err.Error())
 			return c.Status(404).SendString("hi, i'm an custom error")
 		},
 	})
 	connectToDb()
+	defer db.GormInstance.Close()
 	setUpRoutes(app)
 	app.Listen(":3000")
 }
-
-// FenderGuitars0060792 mfduar8766 mongo
