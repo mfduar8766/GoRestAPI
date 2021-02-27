@@ -28,16 +28,23 @@ func GetBooks(c *fiber.Ctx) error {
 // GetBook - Used to GET book by ID
 func GetBook(c *fiber.Ctx) error {
 	fmt.Println("GetBook()")
-
-	return c.Send([]byte("One Books"))
+	id := c.Params("id")
+	var book Books
+	db.GormInstance.First(&book, id)
+	if book.Title == "" {
+		return c.Status(500).Send(utils.CreateMessage("Book does not exist"))
+	}
+	db.GormInstance.Find(&book)
+	return c.JSON(book)
 }
 
 // AddBook - Used to add new book
 func AddBook(c *fiber.Ctx) error {
 	fmt.Println("AddBook()")
 	var book Books
-	err := json.Unmarshal(c.Body(), &book)
-	utils.MustNotError(err)
+	if err := c.BodyParser(&book); err != nil {
+		c.Status(500).Send(utils.CreateMessage("Error parsing incommig request body"))
+	}
 	db.GormInstance.Create(&book)
 	return c.JSON(book)
 }
@@ -47,17 +54,16 @@ func UpdateBook(c *fiber.Ctx) error {
 	fmt.Println("UpdateBook()")
 	id := c.Params("id")
 	var book Books
+	var newBook Books
 	db.GormInstance.First(&book, id)
-	if book.Title == "" {
-		return c.Status(500).Send([]byte("Book does not exist"))
+	if book.Title == "" || book.Author == "" {
+		return c.Status(500).Send(utils.CreateMessage("Book does not exist"))
 	}
-	err := json.Unmarshal(c.Body(), &book)
-	utils.MustNotError(err)
-	var newBook = new(Books)
-	newBook.Title = book.Title
-	newBook.Author = book.Author
-	db.GormInstance.Update(newBook)
-	return c.JSON(newBook)
+	if err := json.Unmarshal(c.Body(), &newBook); err != nil {
+		c.Status(500).Send(utils.CreateMessage("Error parsing incomming data"))
+	}
+	db.GormInstance.Model(&book).Updates(Books{Title: newBook.Title, Author: newBook.Author})
+	return c.JSON(book)
 }
 
 // DeleteBook - Used to DELETE book by ID
@@ -67,8 +73,8 @@ func DeleteBook(c *fiber.Ctx) error {
 	var book Books
 	db.GormInstance.First(&book, id)
 	if book.Title == "" {
-		return c.Status(500).Send([]byte("Book does not exist"))
+		return c.Status(500).Send(utils.CreateMessage("Book does not exist"))
 	}
 	db.GormInstance.Delete(&book)
-	return c.Status(200).Send([]byte("Successfully deleted book"))
+	return c.Status(200).Send(utils.CreateMessage("Successfully deleted book"))
 }
