@@ -10,3 +10,8 @@ func MustNotError(err error) error {
 	}
 	return nil
 }
+
+// CreateMessage - Used to create a byte error
+func CreateMessage(mesage string) []byte {
+	return []byte(mesage)
+}
