@@ -2,10 +2,11 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/joho/godotenv"
-	"github.com/mfduar8766/GoRestAPI/utils"
 	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/mfduar8766/GoRestAPI/logger"
+	"github.com/mfduar8766/GoRestAPI/utils"
 )
 
 // DbConfig - DB config details
@@ -18,12 +19,12 @@ type DbConfig struct {
 }
 
 func getEnvData(key string) string {
-	fmt.Println("Config getEnvData()")
+	logger.LogInstance.Info("Config getEnvData()")
 	err := godotenv.Load(".env")
 	utils.MustNotError(err)
 	env, exists := os.LookupEnv(key)
 	if !exists {
-		fmt.Println("ENV var does not exist")
+		logger.LogInstance.Panic("Config getEnvData()")
 		return ""
 	}
 	return env
@@ -31,7 +32,7 @@ func getEnvData(key string) string {
 
 // InitDbConfig - Used to return an instance of the DB config
 func InitDbConfig() *DbConfig {
-	fmt.Println("Config InitDbConfig()")
+	logger.LogInstance.Info("Config InitDbConfig()")
 	dbConfig := new(DbConfig)
 	envVars := map[string]interface{}{
 		"DB_USERNAME": "",

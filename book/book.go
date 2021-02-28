@@ -2,11 +2,11 @@ package book
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/gorm"
 	"github.com/mfduar8766/GoRestAPI/db"
+	"github.com/mfduar8766/GoRestAPI/logger"
 	"github.com/mfduar8766/GoRestAPI/utils"
 )
 
@@ -19,7 +19,7 @@ type Books struct {
 
 // GetBooks - Used to GET all books
 func GetBooks(c *fiber.Ctx) error {
-	fmt.Println("GetBooks()")
+	logger.LogInstance.Info("GetBooks()")
 	var books []Books
 	db.GormInstance.Find(&books)
 	return c.JSON(books)
@@ -27,7 +27,7 @@ func GetBooks(c *fiber.Ctx) error {
 
 // GetBook - Used to GET book by ID
 func GetBook(c *fiber.Ctx) error {
-	fmt.Println("GetBook()")
+	logger.LogInstance.Info("GetBook()")
 	id := c.Params("id")
 	var book Books
 	db.GormInstance.First(&book, id)
@@ -40,7 +40,7 @@ func GetBook(c *fiber.Ctx) error {
 
 // AddBook - Used to add new book
 func AddBook(c *fiber.Ctx) error {
-	fmt.Println("AddBook()")
+	logger.LogInstance.Info("AddBook()")
 	var book Books
 	if err := c.BodyParser(&book); err != nil {
 		c.Status(500).Send(utils.CreateMessage("Error parsing incommig request body"))
@@ -51,7 +51,7 @@ func AddBook(c *fiber.Ctx) error {
 
 // UpdateBook - Used to update book by ID
 func UpdateBook(c *fiber.Ctx) error {
-	fmt.Println("UpdateBook()")
+	logger.LogInstance.Info("UpdateBook()")
 	id := c.Params("id")
 	var book Books
 	var newBook Books
@@ -68,7 +68,7 @@ func UpdateBook(c *fiber.Ctx) error {
 
 // DeleteBook - Used to DELETE book by ID
 func DeleteBook(c *fiber.Ctx) error {
-	fmt.Println("DeleteBook()")
+	logger.LogInstance.Info("DeleteBook()")
 	id := c.Params("id")
 	var book Books
 	db.GormInstance.First(&book, id)
