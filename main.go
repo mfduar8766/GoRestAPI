@@ -10,10 +10,11 @@ import (
 	"github.com/mfduar8766/GoRestAPI/config"
 	"github.com/mfduar8766/GoRestAPI/db"
 	"github.com/mfduar8766/GoRestAPI/utils"
+	"github.com/mfduar8766/GoRestAPI/logger"
 )
 
 func setUpRoutes(app *fiber.App) {
-	fmt.Println("setUpRoutes()")
+	logger.LogInstance.Info("setUpRoutes()")
 	app.Get("/api/v1/books", book.GetBooks)
 	app.Get("/api/v1/book/:id", book.GetBook)
 	app.Post("/api/v1/book", book.AddBook)
@@ -22,7 +23,7 @@ func setUpRoutes(app *fiber.App) {
 }
 
 func connectToDb() {
-	fmt.Println("connectToDb()")
+	logger.LogInstance.Info("connectToDb()")
 	dbConfig := config.InitDbConfig()
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbConfig.Host, dbConfig.Port, dbConfig.User, dbConfig.Password, dbConfig.DBName)
 	var err error
@@ -31,17 +32,17 @@ func connectToDb() {
 	dataBase := db.GormInstance.DB()
 	err = dataBase.Ping()
 	utils.MustNotError(err)
-	fmt.Println("Successfully connected to DB")
+	logger.LogInstance.Info("Successfully connected to DB")
 	db.GormInstance.AutoMigrate(&book.Books{})
-	fmt.Println("Successfully migrated data to DB")
+	logger.LogInstance.Info("Successfully migrated data to DB")
 }
 
 func main() {
-	fmt.Println("main()")
+	logger.CreateLogger("logger", "logs.txt")
+	logger.LogInstance.Info("Init App Running Main()")
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			fmt.Printf("Error: %+v", err.Error())
-			return c.Status(404).SendString("hi, i'm an custom error")
+			return c.Status(404).SendString(err.Error())
 		},
 	})
 	connectToDb()
