@@ -49,7 +49,7 @@ func CreateLogger(dir string, fileName string) {
 // Info - General log
 func (l *Log) Info(message string) {
 	formattedMessage := fmt.Sprintf("INFO: %s", message)
-	log.Print("INFO: ", formattedMessage)
+	log.Print(formattedMessage)
 	_, err := l.file.WriteString(formattedMessage)
 	utils.MustNotError(err)
 }
